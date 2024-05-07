@@ -1,0 +1,305 @@
+---
+title: React SDK
+description: Getting Started with the OpenFeature React SDK
+---
+
+import FlagdContent from '@site/src/components/custom/tutorial/flagd-content.mdx';
+import FlagdChangeContent from '@site/src/components/custom/tutorial/flagd-change-content.mdx';
+import WhyDefaultContent from '@site/src/components/custom/tutorial/why-default-content.mdx';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Getting Started with the OpenFeature React SDK
+
+## Introduction
+
+This walk-through teaches you the basics of using OpenFeature with React.
+
+You'll learn how to:
+
+- Install the React SDK
+- Install and configure a provider
+- Perform basic feature flagging
+
+## Requirements
+
+This walk-through assumes that:
+
+- You have a basic understanding of JavaScript and React.
+  If not, please review the [React documentation][learn-react].
+- You have Node 18 or later.
+  The latest version of Node can be found [here][nodejs-download].
+- You have Docker installed and running on the host system.
+  The latest version of Docker can be found [here][docker-download].
+
+## Walk-through
+
+The get started, create a new React project and install the dependencies.
+This can be done by running the following commands.
+
+<Tabs groupId="js-tutorial">
+{/* <TabItem value="js" label="JavaScript">
+
+```sh
+npm create vite@latest openfeature-react-intro -- --template react
+cd openfeature-react-intro
+npm install
+```
+
+</TabItem> */}
+
+<TabItem value="ts" label="TypeScript">
+
+```sh
+npm create vite@latest openfeature-react-intro -- --template react-ts && \
+  cd openfeature-react-intro && \
+  npm install
+```
+
+</TabItem>
+</Tabs>
+
+### Step 2: Start the development server
+
+To start the development server, run the following command.
+
+```sh
+npm run dev
+```
+
+You can now view your React app at [http://localhost:5173/](http://localhost:5173/).
+
+### Step 3: Add the OpenFeature React SDK
+
+Let's install the OpenFeature React SDK using the following command.
+
+```sh
+npm install @openfeature/react-sdk
+```
+
+<Tabs groupId="js-tutorial">
+{/* <TabItem value="js" label="JavaScript">
+
+Update `src/main.jsx` to import the SDK and set the React Provider.
+
+```js
+// TODO CHANGE THIS!!!
+const express = require('express');
+// diff-add 
+const { OpenFeature } = require('@openfeature/react-sdk');
+```
+
+</TabItem> */}
+
+<TabItem value="ts" label="TypeScript">
+
+Update `src/main.tsx` to import the SDK and set the React Provider.
+
+```ts
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.tsx'
+import './index.css'
+// diff-add-block-start
+import { InMemoryProvider, OpenFeature, OpenFeatureProvider } from "@openfeature/react-sdk";
+
+const provider = new InMemoryProvider()
+OpenFeature.setProvider(provider)
+// diff-add-block-end
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    // diff-add
+    <OpenFeatureProvider>
+      // highlight-next-line
+      <App />
+    // diff-add
+    </OpenFeatureProvider>
+  </React.StrictMode>,
+)
+```
+
+</TabItem>
+</Tabs>
+
+Once you've imported `OpenFeature` and set the `OpenFeatureProvider`, feature flags can be be evaluated in any child component.
+
+A React Hook can be used to get a feature flag value.
+In this case, we'll get a `boolean` value using the `welcome-message` [flag key][flag-key].
+
+The second argument is the fallback value, which is returned if there's abnormal behavior and to infer the expected return type.
+
+<Tabs groupId="js-tutorial">
+{/* <TabItem value="js" label="JavaScript">
+
+Update `src/main.jsx` to import the SDK and set the React Provider.
+
+```js
+// TODO CHANGE THIS!!!
+const express = require('express');
+// diff-add 
+const { OpenFeature } = require('@openfeature/react-sdk');
+```
+
+</TabItem> */}
+
+<TabItem value="ts" label="TypeScript">
+
+Update `src/App.tsx` to evaluate a feature flag in the App Component.
+
+```tsx
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
+// diff-add 
+import { useFlag } from '@openfeature/react-sdk'
+
+function App() {
+  const [count, setCount] = useState(0)
+  // diff-add-block-start
+  const { value: showWelcomeMessage } = useFlag("welcome-message", false);
+  const message = showWelcomeMessage ? "Vite + React + OpenFeature" : "Vite + React";
+  // diff-add-block-end
+  return (
+    <>
+      <div>
+        <a href="https://vitejs.dev" target="_blank">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      // highlight-next-line
+      <h1>{ message }</h1>
+      <div className="card">
+        <button onClick={() => setCount((count) => count + 1)}>
+          count is {count}
+        </button>
+        <p>
+          Edit <code>src/App.tsx</code> and save to test HMR
+        </p>
+      </div>
+      <p className="read-the-docs">
+        Click on the Vite and React logos to learn more
+      </p>
+    </>
+  )
+}
+
+export default App
+```
+
+</TabItem>
+</Tabs>
+
+
+Open your favorite browser and navigate to [http://localhost:5173/](http://localhost:5173/).
+
+You should still see a fancy screen with the Vite and React logos and a message that reads "Vite + React".
+
+<WhyDefaultContent />
+
+:::note
+
+You should stop the app by using the keyboard short `ctrl + c` before moving on to the next step.
+
+:::
+
+### Step 5: Configure a provider (OFREP)
+
+<FlagdContent />
+
+Now let's make the required code changes in our application.
+
+Using NPM, install the `OFREP provider` with the following command:
+
+```sh
+npm install @openfeature/ofrep-web-provider
+```
+
+<Tabs groupId="js-tutorial">
+{/* <TabItem value="js" label="JavaScript">
+
+Now, update `index.js` to import the `flagd provider`.
+
+```js
+const { OpenFeature } = require('@openfeature/react-sdk');
+// diff-add
+const { FlagdProvider } = require('@openfeature/flagd-provider');
+```
+
+</TabItem> */}
+
+<TabItem value="ts" label="TypeScript">
+
+Now, update `src/main.tsx` to import the `ofrep provider`.
+
+```tsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.tsx'
+import './index.css'
+// highlight-next-line
+import { OpenFeature, OpenFeatureProvider } from "@openfeature/react-sdk"
+// diff-add
+import { OFREPWebProvider } from "@openfeature/ofrep-web-provider"
+
+// highlight-next-line
+const provider = new OFREPWebProvider({ baseUrl: "http://localhost:8016", pollInterval: 1000 });
+OpenFeature.setProvider(provider)
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <OpenFeatureProvider>
+      <App />
+    </OpenFeatureProvider>
+  </React.StrictMode>,
+)
+```
+
+</TabItem>
+</Tabs>
+
+### Step 6: Rerun the application
+
+Now that everything is in place, let's start the app again.
+
+<Tabs groupId="js-tutorial">
+{/* <TabItem value="js" label="JavaScript">
+
+```sh
+node index.js
+```
+
+</TabItem> */}
+
+<TabItem value="ts" label="TypeScript">
+
+```sh
+npm run dev
+```
+
+</TabItem>
+</Tabs>
+
+Open your favorite browser and navigate to [http://localhost:5173](http://localhost:5173) should show the same value as before.
+This difference is now the feature flag value can be changed at runtime!
+
+<FlagdChangeContent />
+
+Save the changes to `flag.json` and you should now be greeted with `Vite + React + OpenFeature`.
+
+## Conclusion
+
+This walk-through introduced you to the OpenFeature React SDK.
+It covered how a provider can be configured to perform the flag evaluation and introduced basic feature flagging concepts.
+It also showcased how feature flags can be updated at runtime, without requiring a redeployment.
+
+[learn-react]: https://react.dev/learn
+[learn-nodejs]: https://nodejs.dev/en/learn/
+[nodejs-download]: https://nodejs.org/en/download/
+[docker-download]: https://docs.docker.com/engine/install/
+[flag-key]: /specification/glossary#flag-key
+[cncf-slack]: https://slack.cncf.io/
